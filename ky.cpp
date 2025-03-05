@@ -53,21 +53,28 @@ using namespace std::literals::string_literals;
 
 
 template <typename... Ts>
-inline void _LOG(const std::source_location& location, const std::string& fmt, Ts&&... args)
+inline void _LOG(const std::source_location& location, const std::string& fmt, Ts... args)
 {
+	const char* func = location.function_name();
+	auto line = location.line();
+
     std::string msg = std::vformat("{}(...) line{}: " + fmt,
-        std::make_format_args(location.function_name(), location.line(), std::forward<Ts>(args)...));
+        std::make_format_args(func, line, args...));
     std::printf("%s", msg.c_str());
 }
 
 template <typename... Ts>
-inline void _LOG_ERROR(const std::source_location& location, const std::string& fmt, Ts&&... args)
+inline void _LOG_ERROR(const std::source_location& location,const std::string& fmt, Ts... args)
 {
-    std::string msg = std::vformat("{}(...) line{}: " + fmt,
-        std::make_format_args(location.function_name(), location.line(), std::forward<Ts>(args)...));
-    std::printf("%s", msg.c_str());
+	const char* func = location.function_name();
+	auto line = location.line();
 
-    throw std::exception(msg.c_str());
+    std::string msg = std::vformat(
+        "{}(...) line{}: " + fmt,
+        std::make_format_args(func, line, args...)
+    );
+	std::printf("%s", msg.c_str());
+	throw std::exception(msg.c_str());
 }
 
 #define LOG(...) _LOG(std::source_location::current(), __VA_ARGS__)
